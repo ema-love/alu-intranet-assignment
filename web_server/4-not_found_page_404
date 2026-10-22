@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Configures a fresh Ubuntu machine so Nginx serves a custom 404 page containing "Ceci n'est pas une page"
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then SUDO="sudo"; fi
+
+$SUDO apt-get -y update
+$SUDO apt-get -y install nginx
+
+echo "Holberton School" | $SUDO tee /var/www/html/index.html > /dev/null
+echo "Ceci n'est pas une page" | $SUDO tee /var/www/html/custom_404.html > /dev/null
+
+$SUDO tee /etc/nginx/sites-available/default > /dev/null <<'NGINX'
+server {
+	listen 80 default_server;
+
+	root /var/www/html;
+	index index.html;
+	server_name _;
+
+	error_page 404 /custom_404.html;
+	location = /custom_404.html {
+		internal;
+	}
+
+	location /redirect_me {
+		return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+	}
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+}
+NGINX
+
+$SUDO service nginx restart

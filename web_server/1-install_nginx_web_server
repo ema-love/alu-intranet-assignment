@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Installs Nginx, makes it listen on port 80 and serve a page containing "Holberton School"
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then SUDO="sudo"; fi
+
+$SUDO apt-get -y update
+$SUDO apt-get -y install nginx
+
+echo "Holberton School" | $SUDO tee /var/www/html/index.html > /dev/null
+
+$SUDO tee /etc/nginx/sites-available/default > /dev/null <<'NGINX'
+server {
+	listen 80 default_server;
+
+	root /var/www/html;
+	index index.html;
+	server_name _;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+}
+NGINX
+
+$SUDO service nginx restart
