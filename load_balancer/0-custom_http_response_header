@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Configures a fresh Ubuntu machine so Nginx adds an X-Served-By header holding the server's hostname
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then SUDO="sudo"; fi
+
+$SUDO apt-get -y update
+$SUDO apt-get -y install nginx
+
+echo "Holberton School" | $SUDO tee /var/www/html/index.html > /dev/null
+echo "Ceci n'est pas une page" | $SUDO tee /var/www/html/custom_404.html > /dev/null
+
+# $hostname is an Nginx variable, so it is filled in by Nginx on whichever server runs it
+$SUDO tee /etc/nginx/sites-available/default > /dev/null <<'NGINX'
+server {
+	listen 80 default_server;
+
+	add_header X-Served-By $hostname always;
+
+	root /var/www/html;
+	index index.html;
+	server_name _;
+
+	error_page 404 /custom_404.html;
+	location = /custom_404.html {
+		internal;
+	}
+
+	location /redirect_me {
+		return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+	}
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+}
+NGINX
+
+$SUDO ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+$SUDO nginx -t && $SUDO service nginx restart

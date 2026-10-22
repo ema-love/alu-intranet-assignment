@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Installs HAProxy on lb-01 and balances HTTP traffic between web-01 and web-02 with roundrobin
+# Replace the three values below with your own student ID and web server IPs before running
+STUDENT_ID="${STUDENT_ID:-[STUDENT_ID]}"
+WEB_01_IP="${WEB_01_IP:-[WEB_01_IP]}"
+WEB_02_IP="${WEB_02_IP:-[WEB_02_IP]}"
+
+for value in "$STUDENT_ID" "$WEB_01_IP" "$WEB_02_IP"; do
+	if [[ "$value" == \[*\] ]]; then
+		echo "Please set STUDENT_ID, WEB_01_IP and WEB_02_IP at the top of $0" >&2
+		exit 1
+	fi
+done
+
+SUDO=""
+if [ "$(id -u)" -ne 0 ]; then SUDO="sudo"; fi
+
+$SUDO apt-get -y update
+$SUDO apt-get -y install haproxy
+
+# Let the init script start HAProxy
+if ! grep -q '^ENABLED=1' /etc/default/haproxy; then
+	echo "ENABLED=1" | $SUDO tee -a /etc/default/haproxy > /dev/null
+fi
+
+$SUDO tee /etc/haproxy/haproxy.cfg > /dev/null <<HAPROXY
+global
+	log /dev/log local0
+	maxconn 2048
+	user haproxy
+	group haproxy
+	daemon
+	# Keep the header name capitalized as X-Served-By (HAProxy lowercases headers by default)
+	h1-case-adjust x-served-by X-Served-By
+
+defaults
+	log global
+	mode http
+	option httplog
+	option dontlognull
+	option h1-case-adjust-bogus-client
+	timeout connect 5s
+	timeout client 30s
+	timeout server 30s
+
+frontend http_front
+	bind *:80
+	default_backend web_servers
+
+backend web_servers
+	balance roundrobin
+	server ${STUDENT_ID}-web-01 ${WEB_01_IP}:80 check
+	server ${STUDENT_ID}-web-02 ${WEB_02_IP}:80 check
+HAPROXY
+
+# Only restart when the configuration is valid
+$SUDO haproxy -c -f /etc/haproxy/haproxy.cfg && $SUDO service haproxy restart
