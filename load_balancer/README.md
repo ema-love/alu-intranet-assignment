@@ -12,19 +12,15 @@ Scripts for the ALU / Holberton **Load balancer** project.
 | `0-custom_http_response_header` | `web-01` **and** `web-02` | Installs and configures Nginx (same setup as `web_server/4-not_found_page_404`) and adds the response header `X-Served-By: <hostname of that server>`. |
 | `1-install_load_balancer` | `lb-01` | Installs HAProxy, sends HTTP traffic to `web-01` and `web-02` in turn (`roundrobin`), checks the config, then restarts with the init script. |
 
-## Before running `1-install_load_balancer`
+## Servers
 
-Edit the three placeholders at the top of the script (they are not filled in because they are specific to you):
+| Name | IP |
+| --- | --- |
+| `6833-web-01` | `184.73.0.98` |
+| `6833-web-02` | `54.174.254.122` |
+| `6833-lb-01` | `44.201.241.113` |
 
-```bash
-STUDENT_ID="[STUDENT_ID]"   # e.g. the number in your server names, 1234 for 1234-web-01
-WEB_01_IP="[WEB_01_IP]"     # public IP of web-01 from your intranet servers page
-WEB_02_IP="[WEB_02_IP]"     # public IP of web-02
-```
-
-The script refuses to run while any placeholder is still there. You can also pass them
-for a single run without editing the file:
-`sudo STUDENT_ID=1234 WEB_01_IP=1.2.3.4 WEB_02_IP=5.6.7.8 ./1-install_load_balancer`
+`1-install_load_balancer` has these backend values filled in at the top.
 
 ## Run order
 
@@ -38,7 +34,7 @@ sudo ./1-install_load_balancer
 curl -sI localhost | grep X-Served-By      # run it a few times: web-01, web-02, web-01, ...
 ```
 
-From your own computer: `curl -sI <lb-01 IP>` repeated should alternate between the two hostnames.
+From your own computer: `curl -sI 44.201.241.113` repeated should alternate between the two hostnames.
 
 ## Configuration choices
 

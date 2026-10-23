@@ -1,16 +1,8 @@
 #!/usr/bin/env bash
 # Installs HAProxy on lb-01 and balances HTTP traffic between web-01 and web-02 with roundrobin
-# Replace the three values below with your own student ID and web server IPs before running
-STUDENT_ID="${STUDENT_ID:-[STUDENT_ID]}"
-WEB_01_IP="${WEB_01_IP:-[WEB_01_IP]}"
-WEB_02_IP="${WEB_02_IP:-[WEB_02_IP]}"
-
-for value in "$STUDENT_ID" "$WEB_01_IP" "$WEB_02_IP"; do
-	if [[ "$value" == \[*\] ]]; then
-		echo "Please set STUDENT_ID, WEB_01_IP and WEB_02_IP at the top of $0" >&2
-		exit 1
-	fi
-done
+STUDENT_ID="6833"
+WEB_01_IP="184.73.0.98"
+WEB_02_IP="54.174.254.122"
 
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then SUDO="sudo"; fi

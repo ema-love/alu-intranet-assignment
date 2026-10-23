@@ -1,0 +1,36 @@
+global
+	log /dev/log local0
+	maxconn 2048
+	user haproxy
+	group haproxy
+	daemon
+	tune.ssl.default-dh-param 2048
+	# Keep X-Served-By and Location capitalized (HAProxy lowercases header names by default)
+	h1-case-adjust x-served-by X-Served-By
+	h1-case-adjust location Location
+
+defaults
+	log global
+	mode http
+	option httplog
+	option dontlognull
+	option forwardfor
+	option h1-case-adjust-bogus-client
+	timeout connect 5s
+	timeout client 30s
+	timeout server 30s
+
+frontend http_front
+	bind *:80
+	http-request redirect scheme https code 301 unless { ssl_fc }
+	default_backend web_servers
+
+frontend https_front
+	bind *:443 ssl crt /etc/haproxy/certs/www.ema-love.tech.pem alpn http/1.1
+	http-request set-header X-Forwarded-Proto https
+	default_backend web_servers
+
+backend web_servers
+	balance roundrobin
+	server 6833-web-01 184.73.0.98:80 check
+	server 6833-web-02 54.174.254.122:80 check
