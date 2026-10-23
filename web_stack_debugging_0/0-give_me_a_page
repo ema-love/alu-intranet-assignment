@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Starts Apache inside the container so it serves "Hello Holberton" on port 80
+service apache2 start
