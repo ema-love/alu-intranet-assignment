@@ -45,6 +45,19 @@ If `service apache2 status` shows something different in your container (for exa
 Apache is missing, or the page does not contain `Hello Holberton`), stop and check before
 submitting: the answer file only covers the "Apache is not running" case.
 
+## Verified on the real image
+
+Tested with `holbertonschool/265-0` (Ubuntu 14.04.5, Apache 2):
+
+| Check | Before | After `0-give_me_a_page` |
+| --- | --- | --- |
+| `service apache2 status` | `apache2 is not running` | `apache2 is running` |
+| Listening on port 80 | nothing | `*:80` |
+| `curl 0:8080` | `Connection reset by peer` (older Docker versions print `Empty reply from server`) | `Hello Holberton` |
+
+`/var/www/html/index.html` already contained `Hello Holberton` and `apache2ctl configtest`
+returned `Syntax OK`, so starting Apache was the only change needed.
+
 ## Does the fix last?
 
 - `docker stop` + `docker start` of the same container: **no**. Apache is not started
