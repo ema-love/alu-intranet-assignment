@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Configures Nginx to run as the unprivileged nginx user and listen on port 8080 on all IPs
+
+# Stop the root-owned Nginx and free port 8080 (held by Apache), without removing any package
+service nginx stop
+service apache2 stop
+
+# Let the nginx user read the config, and make it the user for the worker processes
+chmod 644 /etc/nginx/nginx.conf
+sed -i 's/^user .*;/user nginx;/' /etc/nginx/nginx.conf
+
+# Listen on port 8080 instead of 80
+sed -i 's/listen 80 default_server;/listen 8080 default_server;/; s/listen \[::\]:80 default_server;/listen [::]:8080 default_server;/' /etc/nginx/sites-available/default
+
+# Give the nginx user its logs, temporary files and PID file
+chown -R nginx:nginx /var/log/nginx /var/lib/nginx
+touch /run/nginx.pid
+chown nginx:nginx /run/nginx.pid
+
+# Start Nginx as the nginx user, so the master and worker processes both run as nginx
+su nginx -s /bin/bash -c 'nginx'

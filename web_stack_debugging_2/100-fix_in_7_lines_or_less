@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Short fix: run Nginx as the nginx user, listening on port 8080
+service apache2 stop
+pkill nginx
+sed -i -e 's/listen \(\[::\]:\)\?80 default/listen \18080 default/' -e 's#/run/nginx.pid#/var/lib/nginx/nginx.pid#' /etc/nginx/nginx.conf /etc/nginx/sites-available/default
+chown -R nginx:nginx /etc/nginx/nginx.conf /var/log/nginx /var/lib/nginx
+su nginx -s /bin/bash -c nginx
